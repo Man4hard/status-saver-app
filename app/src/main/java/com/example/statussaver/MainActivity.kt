@@ -122,16 +122,6 @@ fun MainScreen(
                         fontWeight = FontWeight.Bold
                     ) 
                 },
-                navigationIcon = {
-                    IconButton(onClick = { /* TODO */ }) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menu", tint = PrimaryGreen)
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { /* TODO */ }) {
-                        Icon(Icons.Default.Search, contentDescription = "Search", tint = PrimaryGreen)
-                    }
-                },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = BgColor)
             )
         },
