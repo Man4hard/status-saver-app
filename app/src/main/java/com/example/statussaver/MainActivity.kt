@@ -98,9 +98,12 @@ fun MainScreen(
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val savedStatuses by viewModel.savedStatuses.collectAsStateWithLifecycle()
     var selectedFilter by remember { mutableStateOf("Videos") }
+    var currentTab by remember { mutableStateOf("Statuses") }
 
     LaunchedEffect(Unit) {
+        viewModel.loadSavedStatuses()
         viewModel.events.collect { event ->
             when (event) {
                 is com.example.statussaver.viewmodel.MainEvent.ShowToast -> {
@@ -120,19 +123,11 @@ fun MainScreen(
         topBar = {
             TopAppBar(
                 title = { 
-                    Column {
-                        Text(
-                            "Status Saver", 
-                            color = PrimaryGreen,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            "Developed by Tayyab", 
-                            color = Color.Gray,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Light
-                        )
-                    }
+                    Text(
+                        "Status Saver", 
+                        color = PrimaryGreen,
+                        fontWeight = FontWeight.Bold
+                    )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = BgColor)
             )
@@ -146,8 +141,8 @@ fun MainScreen(
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.PhotoLibrary, contentDescription = "Statuses") },
                     label = { Text("Statuses") },
-                    selected = true,
-                    onClick = { /* TODO */ },
+                    selected = currentTab == "Statuses",
+                    onClick = { currentTab = "Statuses" },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = OnPrimaryGreen,
                         selectedTextColor = PrimaryGreen,
@@ -159,8 +154,11 @@ fun MainScreen(
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Star, contentDescription = "Saved") },
                     label = { Text("Saved") },
-                    selected = false,
-                    onClick = { /* TODO */ },
+                    selected = currentTab == "Saved",
+                    onClick = { 
+                        currentTab = "Saved" 
+                        viewModel.loadSavedStatuses()
+                    },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = OnPrimaryGreen,
                         selectedTextColor = PrimaryGreen,
@@ -201,79 +199,114 @@ fun MainScreen(
 
             // Main Content
             Box(modifier = Modifier.fillMaxSize()) {
-                when (val state = uiState) {
-                    is MainUiState.Loading -> {
-                        CircularProgressIndicator(
-                            color = PrimaryGreen,
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                    }
-                    is MainUiState.PermissionRequired -> {
-                        Column(
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .padding(32.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text("Permission required", color = Color.White)
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Button(
-                                onClick = { 
-                                    launcher.launch(Uri.parse("content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fmedia/document/primary%3AAndroid%2Fmedia%2Fcom.whatsapp%2FWhatsApp%2FMedia%2F.Statuses")) 
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen)
-                            ) {
-                                Text("Link WhatsApp", color = OnPrimaryGreen)
+                if (currentTab == "Saved") {
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        if (savedStatuses.isEmpty()) {
+                            Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                Text("No saved statuses.", color = OnSurfaceVariant)
                             }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Button(
-                                onClick = { 
-                                    launcher.launch(Uri.parse("content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fmedia/document/primary%3AAndroid%2Fmedia%2Fcom.whatsapp.w4b%2FWhatsApp%20Business%2FMedia%2F.Statuses")) 
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen)
-                            ) {
-                                Text("Link WA Business", color = OnPrimaryGreen)
-                            }
-                        }
-                    }
-                    is MainUiState.Success -> {
-                        val filteredStatuses = remember(state.statuses, selectedFilter) {
-                            state.statuses.filter { 
-                                if (selectedFilter == "Images") !it.isVideo else it.isVideo 
-                            }
-                        }
-
-                        if (filteredStatuses.isEmpty()) {
-                            Text(
-                                "No statuses found.",
-                                color = OnSurfaceVariant,
-                                modifier = Modifier.align(Alignment.Center)
-                            )
                         } else {
                             LazyVerticalGrid(
                                 columns = GridCells.Fixed(2),
                                 contentPadding = PaddingValues(16.dp),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                                modifier = Modifier.fillMaxSize()
+                                modifier = Modifier.weight(1f).fillMaxWidth()
                             ) {
-                                items(filteredStatuses.size) { index ->
-                                    val status = filteredStatuses[index]
+                                items(savedStatuses.size) { index ->
+                                    val status = savedStatuses[index]
                                     StatusCard(
                                         status = status,
-                                        onClick = { onNavigateToPreview(selectedFilter, index) },
-                                        onDownloadClick = { viewModel.saveStatus(status) }
+                                        onClick = { /* TODO View Saved Preview */ },
+                                        onDownloadClick = { /* Already saved */ }
                                     )
                                 }
                             }
                         }
-                    }
-                    is MainUiState.Error -> {
+                        // Developer Credit
                         Text(
-                            "Error: ${state.message}", 
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.align(Alignment.Center)
+                            "Developed by Tayyab", 
+                            color = Color.Gray,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Light,
+                            modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp)
                         )
+                    }
+                } else {
+                    when (val state = uiState) {
+                        is MainUiState.Loading -> {
+                            CircularProgressIndicator(
+                                color = PrimaryGreen,
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                        }
+                        is MainUiState.PermissionRequired -> {
+                            Column(
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                                    .padding(32.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text("Permission required", color = Color.White)
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Button(
+                                    onClick = { 
+                                        launcher.launch(Uri.parse("content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fmedia/document/primary%3AAndroid%2Fmedia%2Fcom.whatsapp%2FWhatsApp%2FMedia%2F.Statuses")) 
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen)
+                                ) {
+                                    Text("Link WhatsApp", color = OnPrimaryGreen)
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Button(
+                                    onClick = { 
+                                        launcher.launch(Uri.parse("content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fmedia/document/primary%3AAndroid%2Fmedia%2Fcom.whatsapp.w4b%2FWhatsApp%20Business%2FMedia%2F.Statuses")) 
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen)
+                                ) {
+                                    Text("Link WA Business", color = OnPrimaryGreen)
+                                }
+                            }
+                        }
+                        is MainUiState.Success -> {
+                            val filteredStatuses = remember(state.statuses, selectedFilter) {
+                                state.statuses.filter { 
+                                    if (selectedFilter == "Images") !it.isVideo else it.isVideo 
+                                }
+                            }
+
+                            if (filteredStatuses.isEmpty()) {
+                                Text(
+                                    "No statuses found.",
+                                    color = OnSurfaceVariant,
+                                    modifier = Modifier.align(Alignment.Center)
+                                )
+                            } else {
+                                LazyVerticalGrid(
+                                    columns = GridCells.Fixed(2),
+                                    contentPadding = PaddingValues(16.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    items(filteredStatuses.size) { index ->
+                                        val status = filteredStatuses[index]
+                                        StatusCard(
+                                            status = status,
+                                            onClick = { onNavigateToPreview(selectedFilter, index) },
+                                            onDownloadClick = { viewModel.saveStatus(status) }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        is MainUiState.Error -> {
+                            Text(
+                                "Error: ${state.message}", 
+                                color = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                        }
                     }
                 }
             }

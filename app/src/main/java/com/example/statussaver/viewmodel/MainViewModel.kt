@@ -38,6 +38,9 @@ class MainViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<MainUiState>(MainUiState.Loading)
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
+    private val _savedStatuses = MutableStateFlow<List<StatusModel>>(emptyList())
+    val savedStatuses: StateFlow<List<StatusModel>> = _savedStatuses.asStateFlow()
+
     private val _events = MutableSharedFlow<MainEvent>()
     val events = _events.asSharedFlow()
 
@@ -67,10 +70,17 @@ class MainViewModel @Inject constructor(
     }
 
     fun refresh() {
+        loadSavedStatuses()
         currentTreeUri?.let { uri ->
             viewModelScope.launch {
                 loadStatuses(uri)
             }
+        }
+    }
+
+    fun loadSavedStatuses() {
+        viewModelScope.launch {
+            _savedStatuses.value = mediaRepository.getSavedMedia()
         }
     }
 
@@ -85,6 +95,7 @@ class MainViewModel @Inject constructor(
             val result = mediaRepository.saveMediaToGallery(status)
             if (result.isSuccess) {
                 _events.emit(MainEvent.ShowToast(result.getOrNull() ?: "Saved"))
+                loadSavedStatuses()
             } else {
                 _events.emit(MainEvent.ShowToast(result.exceptionOrNull()?.message ?: "Failed to save"))
             }

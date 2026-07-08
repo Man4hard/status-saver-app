@@ -2,6 +2,7 @@ package com.example.statussaver.data
 
 import android.content.ContentValues
 import android.content.Context
+import android.content.ContentUris
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
@@ -118,5 +119,67 @@ class MediaRepository @Inject constructor(
             }
             return Result.failure(e)
         }
+    }
+
+    suspend fun getSavedMedia(): List<StatusModel> = withContext(Dispatchers.IO) {
+        val savedList = mutableListOf<StatusModel>()
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val projection = arrayOf(
+                MediaStore.MediaColumns._ID,
+                MediaStore.MediaColumns.DISPLAY_NAME
+            )
+            
+            // Query Images
+            val imageSelection = "${MediaStore.MediaColumns.RELATIVE_PATH} LIKE ?"
+            val imageArgs = arrayOf("%Pictures/StatusSaver%")
+            context.contentResolver.query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                projection, imageSelection, imageArgs, null
+            )?.use { cursor ->
+                val idCol = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID)
+                val nameCol = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME)
+                
+                while (cursor.moveToNext()) {
+                    val id = cursor.getLong(idCol)
+                    val name = cursor.getString(nameCol) ?: "Image"
+                    val uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id)
+                    savedList.add(StatusModel(name, uri, false))
+                }
+            }
+            
+            // Query Videos
+            val videoSelection = "${MediaStore.MediaColumns.RELATIVE_PATH} LIKE ?"
+            val videoArgs = arrayOf("%Movies/StatusSaver%")
+            context.contentResolver.query(
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                projection, videoSelection, videoArgs, null
+            )?.use { cursor ->
+                val idCol = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID)
+                val nameCol = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME)
+                
+                while (cursor.moveToNext()) {
+                    val id = cursor.getLong(idCol)
+                    val name = cursor.getString(nameCol) ?: "Video"
+                    val uri = ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id)
+                    savedList.add(StatusModel(name, uri, true))
+                }
+            }
+        } else {
+            val picDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "StatusSaver")
+            if (picDir.exists()) {
+                picDir.listFiles()?.forEach { file ->
+                    savedList.add(StatusModel(file.name, Uri.fromFile(file), false))
+                }
+            }
+            val movDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), "StatusSaver")
+            if (movDir.exists()) {
+                movDir.listFiles()?.forEach { file ->
+                    savedList.add(StatusModel(file.name, Uri.fromFile(file), true))
+                }
+            }
+        }
+        
+        savedList
     }
 }
