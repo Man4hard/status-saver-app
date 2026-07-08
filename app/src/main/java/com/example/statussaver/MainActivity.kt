@@ -45,7 +45,6 @@ val BgColor = Color(0xFF131313)
 val PrimaryGreen = Color(0xFF25D366)
 val OnPrimaryGreen = Color(0xFF005523)
 val SurfaceLow = Color(0xFF1C1B1B)
-val SurfaceHigh = Color(0xFF2A2A2A)
 val OnSurfaceVariant = Color(0xFFBBCBB9)
 
 @AndroidEntryPoint
@@ -67,9 +66,6 @@ class MainActivity : ComponentActivity() {
                                 activity = this@MainActivity, 
                                 onNavigateToPreview = { filter, index ->
                                     navController.navigate("preview/$filter/$index")
-                                },
-                                onNavigateToSettings = {
-                                    navController.navigate("settings")
                                 }
                             )
                         }
@@ -77,9 +73,6 @@ class MainActivity : ComponentActivity() {
                             val filter = backStackEntry.arguments?.getString("filter") ?: "Images"
                             val index = backStackEntry.arguments?.getString("index")?.toIntOrNull() ?: 0
                             PreviewScreen(viewModel, filter, index, onNavigateBack = { navController.popBackStack() })
-                        }
-                        composable("settings") {
-                            SettingsScreen(onNavigateBack = { navController.popBackStack() })
                         }
                     }
                 }
@@ -100,8 +93,7 @@ class MainActivity : ComponentActivity() {
 fun MainScreen(
     viewModel: MainViewModel, 
     activity: MainActivity, 
-    onNavigateToPreview: (String, Int) -> Unit,
-    onNavigateToSettings: () -> Unit
+    onNavigateToPreview: (String, Int) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedFilter by remember { mutableStateOf("Images") }
@@ -158,19 +150,6 @@ fun MainScreen(
                     label = { Text("Saved") },
                     selected = false,
                     onClick = { /* TODO */ },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = OnPrimaryGreen,
-                        selectedTextColor = PrimaryGreen,
-                        indicatorColor = PrimaryGreen,
-                        unselectedIconColor = OnSurfaceVariant,
-                        unselectedTextColor = OnSurfaceVariant
-                    )
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
-                    label = { Text("Settings") },
-                    selected = false,
-                    onClick = { onNavigateToSettings() },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = OnPrimaryGreen,
                         selectedTextColor = PrimaryGreen,
