@@ -3,6 +3,7 @@ package com.example.statussaver
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -88,7 +89,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-import android.widget.Toast
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
