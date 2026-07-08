@@ -87,6 +87,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+import android.widget.Toast
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
@@ -94,8 +95,19 @@ fun MainScreen(
     activity: MainActivity, 
     onNavigateToPreview: (String, Int) -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedFilter by remember { mutableStateOf("Images") }
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is com.example.statussaver.viewmodel.MainEvent.ShowToast -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree()
@@ -238,7 +250,11 @@ fun MainScreen(
                             ) {
                                 items(filteredStatuses.size) { index ->
                                     val status = filteredStatuses[index]
-                                    StatusCard(status) { onNavigateToPreview(selectedFilter, index) }
+                                    StatusCard(
+                                        status = status,
+                                        onClick = { onNavigateToPreview(selectedFilter, index) },
+                                        onDownloadClick = { viewModel.saveStatus(status) }
+                                    )
                                 }
                             }
                         }
@@ -283,7 +299,7 @@ fun FilterButton(
 }
 
 @Composable
-fun StatusCard(status: StatusModel, onClick: () -> Unit) {
+fun StatusCard(status: StatusModel, onClick: () -> Unit, onDownloadClick: () -> Unit) {
     Box(
         modifier = Modifier
             .aspectRatio(9f / 16f)
@@ -330,6 +346,24 @@ fun StatusCard(status: StatusModel, onClick: () -> Unit) {
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(8.dp)
+                .padding(bottom = 6.dp)
         )
+        
+        // Download Button
+        IconButton(
+            onClick = { onDownloadClick() },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(4.dp)
+                .size(36.dp)
+                .background(PrimaryGreen.copy(alpha = 0.9f), RoundedCornerShape(18.dp))
+        ) {
+            Icon(
+                Icons.Default.Download,
+                contentDescription = "Download",
+                tint = OnPrimaryGreen,
+                modifier = Modifier.size(20.dp)
+            )
+        }
     }
 }
