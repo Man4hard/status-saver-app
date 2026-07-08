@@ -97,7 +97,7 @@ fun MainScreen(
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var selectedFilter by remember { mutableStateOf("Images") }
+    var selectedFilter by remember { mutableStateOf("Videos") }
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -178,16 +178,16 @@ fun MainScreen(
                     .padding(4.dp)
             ) {
                 FilterButton(
-                    text = "Images",
-                    isSelected = selectedFilter == "Images",
-                    modifier = Modifier.weight(1f)
-                ) { selectedFilter = "Images" }
-                
-                FilterButton(
                     text = "Videos",
                     isSelected = selectedFilter == "Videos",
                     modifier = Modifier.weight(1f)
                 ) { selectedFilter = "Videos" }
+
+                FilterButton(
+                    text = "Images",
+                    isSelected = selectedFilter == "Images",
+                    modifier = Modifier.weight(1f)
+                ) { selectedFilter = "Images" }
             }
 
             // Main Content
