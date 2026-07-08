@@ -35,7 +35,6 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.statussaver.data.StatusModel
 import com.example.statussaver.ui.PreviewScreen
-import com.example.statussaver.ui.SettingsScreen
 import com.example.statussaver.viewmodel.MainUiState
 import com.example.statussaver.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
