@@ -208,7 +208,7 @@ fun MainScreen(
                             Spacer(modifier = Modifier.height(16.dp))
                             Button(
                                 onClick = { 
-                                    launcher.launch(Uri.parse("content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fmedia%2Fcom.whatsapp%2FWhatsApp%2FMedia%2F.Statuses")) 
+                                    launcher.launch(Uri.parse("content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fmedia/document/primary%3AAndroid%2Fmedia%2Fcom.whatsapp%2FWhatsApp%2FMedia%2F.Statuses")) 
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen)
                             ) {
@@ -217,7 +217,7 @@ fun MainScreen(
                             Spacer(modifier = Modifier.height(8.dp))
                             Button(
                                 onClick = { 
-                                    launcher.launch(Uri.parse("content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fmedia%2Fcom.whatsapp.w4b%2FWhatsApp%20Business%2FMedia%2F.Statuses")) 
+                                    launcher.launch(Uri.parse("content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fmedia/document/primary%3AAndroid%2Fmedia%2Fcom.whatsapp.w4b%2FWhatsApp%20Business%2FMedia%2F.Statuses")) 
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen)
                             ) {
