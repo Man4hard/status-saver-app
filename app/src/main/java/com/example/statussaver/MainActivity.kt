@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -119,11 +120,19 @@ fun MainScreen(
         topBar = {
             TopAppBar(
                 title = { 
-                    Text(
-                        "Status Saver", 
-                        color = PrimaryGreen,
-                        fontWeight = FontWeight.Bold
-                    ) 
+                    Column {
+                        Text(
+                            "Status Saver", 
+                            color = PrimaryGreen,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            "Developed by Tayyab", 
+                            color = Color.Gray,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Light
+                        )
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = BgColor)
             )
