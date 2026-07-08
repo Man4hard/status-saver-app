@@ -116,16 +116,7 @@ fun MainScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = BgColor)
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { /* TODO Save Action */ },
-                containerColor = PrimaryGreen,
-                contentColor = OnPrimaryGreen,
-                shape = RoundedCornerShape(28.dp)
-            ) {
-                Icon(Icons.Default.Download, contentDescription = "Download")
-            }
-        },
+
         bottomBar = {
             NavigationBar(
                 containerColor = SurfaceLow,
