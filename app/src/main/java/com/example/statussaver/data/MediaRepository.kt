@@ -3,6 +3,7 @@ package com.example.statussaver.data
 import android.content.ContentValues
 import android.content.Context
 import android.content.ContentUris
+import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
@@ -144,7 +145,7 @@ class MediaRepository @Inject constructor(
                     val id = cursor.getLong(idCol)
                     val name = cursor.getString(nameCol) ?: "Image"
                     val uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id)
-                    savedList.add(StatusModel(name, uri, false))
+                    savedList.add(StatusModel(uri, name, false, System.currentTimeMillis()))
                 }
             }
             
@@ -162,20 +163,20 @@ class MediaRepository @Inject constructor(
                     val id = cursor.getLong(idCol)
                     val name = cursor.getString(nameCol) ?: "Video"
                     val uri = ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id)
-                    savedList.add(StatusModel(name, uri, true))
+                    savedList.add(StatusModel(uri, name, true, System.currentTimeMillis()))
                 }
             }
         } else {
             val picDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "StatusSaver")
             if (picDir.exists()) {
                 picDir.listFiles()?.forEach { file ->
-                    savedList.add(StatusModel(file.name, Uri.fromFile(file), false))
+                    savedList.add(StatusModel(Uri.fromFile(file), file.name, false, file.lastModified()))
                 }
             }
             val movDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), "StatusSaver")
             if (movDir.exists()) {
                 movDir.listFiles()?.forEach { file ->
-                    savedList.add(StatusModel(file.name, Uri.fromFile(file), true))
+                    savedList.add(StatusModel(Uri.fromFile(file), file.name, true, file.lastModified()))
                 }
             }
         }
